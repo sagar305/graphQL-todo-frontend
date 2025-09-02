@@ -1,55 +1,87 @@
 import React from 'react';
-import { useQuery } from '@apollo/client/react';
-import { GET_TODOS } from '../graphql/queries/userQuery';
-import { GetTodosData } from './interface';
-import { Typography } from '@mui/material';
-import MenuBar from './MenuBar';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useMutation } from '@apollo/client/react';
+import { REFRESH_TOKEN_GQL } from '../graphql/mutations/regenerateToken';
+import routes from '../routes';
+
+interface RegenerateTokenResponse {
+  refreshToken:
+    | {
+        refreshToken: string | undefined;
+        token: string | undefined;
+        user: {
+          email: string;
+        };
+      }
+    | undefined
+    | null;
+}
 
 const App: React.FC = () => {
-  const { data, loading, error } = useQuery<GetTodosData>(GET_TODOS);
+  const [handleToken, { data, loading, error }] =
+    useMutation<RegenerateTokenResponse>(REFRESH_TOKEN_GQL);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  console.log(data, loading, error);
+  const handleApiCall = async () => {
+    try {
+      await handleToken({
+        variables: {
+          refreshToken: localStorage.getItem('refreshToken'),
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('accessToken');
+      navigate('/login');
+    }
+  };
+
+  React.useEffect(() => {
+    if (
+      data?.['refreshToken'] !== null &&
+      data?.['refreshToken'] !== undefined
+    ) {
+      localStorage.setItem(
+        'refreshToken',
+        data?.['refreshToken']?.['refreshToken'] ?? ''
+      );
+      localStorage.setItem(
+        'accessToken',
+        data?.['refreshToken']?.['token'] ?? ''
+      );
+      if (location.pathname === '/login' || location.pathname === '/signup') {
+        navigate(`/`);
+      }
+    }
+  }, [data]);
+
+  React.useEffect(() => {
+    if (
+      localStorage.getItem('refreshToken') !== null ||
+      localStorage.getItem('refreshToken') !== '' ||
+      localStorage.getItem('refreshToken') !== undefined
+    ) {
+      handleApiCall();
+    }
+    if (
+      (localStorage.getItem('refreshToken') === null ||
+        localStorage.getItem('refreshToken') === '' ||
+        localStorage.getItem('refreshToken') === undefined) &&
+      location.pathname !== '/login' &&
+      location.pathname !== '/signup'
+    ) {
+      navigate(`/login`);
+    }
+  }, []);
+
   return (
-    <>
-      <MenuBar />
-
-      <Typography>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique unde
-        fugit veniam eius, perspiciatis sunt? Corporis qui ducimus quibusdam,
-        aliquam dolore excepturi quae. Distinctio enim at eligendi perferendis
-        in cum quibusdam sed quae, accusantium et aperiam? Quod itaque
-        exercitationem, at ab sequi qui modi delectus quia corrupti alias
-        distinctio nostrum. Minima ex dolor modi inventore sapiente
-        necessitatibus aliquam fuga et. Sed numquam quibusdam at officia
-        sapiente porro maxime corrupti perspiciatis asperiores, exercitationem
-        eius nostrum consequuntur iure aliquam itaque, assumenda et! Quibusdam
-        temporibus beatae doloremque voluptatum doloribus soluta accusamus porro
-        reprehenderit eos inventore facere, fugit, molestiae ab officiis illo
-        voluptates recusandae. Vel dolor nobis eius, ratione atque soluta,
-        aliquam fugit qui iste architecto perspiciatis. Nobis, voluptatem!
-        Cumque, eligendi unde aliquid minus quis sit debitis obcaecati error,
-        delectus quo eius exercitationem tempore. Delectus sapiente, provident
-        corporis dolorum quibusdam aut beatae repellendus est labore quisquam
-        praesentium repudiandae non vel laboriosam quo ab perferendis velit ipsa
-        deleniti modi! Ipsam, illo quod. Nesciunt commodi nihil corrupti cum non
-        fugiat praesentium doloremque architecto laborum aliquid. Quae, maxime
-        recusandae? Eveniet dolore molestiae dicta blanditiis est expedita eius
-        debitis cupiditate porro sed aspernatur quidem, repellat nihil quasi
-        praesentium quia eos, quibusdam provident. Incidunt tempore vel placeat
-        voluptate iure labore, repellendus beatae quia unde est aliquid dolor
-        molestias libero. Reiciendis similique exercitationem consequatur, nobis
-        placeat illo laudantium! Enim perferendis nulla soluta magni error,
-        provident repellat similique cupiditate ipsam, et tempore cumque quod!
-        Qui, iure suscipit tempora unde rerum autem saepe nisi vel cupiditate
-        iusto. Illum, corrupti? Fugiat quidem accusantium nulla. Aliquid
-        inventore commodi reprehenderit rerum reiciendis! Quidem alias
-        repudiandae eaque eveniet cumque nihil aliquam in expedita, impedit quas
-        ipsum nesciunt ipsa ullam consequuntur dignissimos numquam at nisi porro
-        a, quaerat rem repellendus. Voluptates perspiciatis, in pariatur
-        impedit, nam facilis libero dolorem dolores sunt inventore perferendis,
-        aut sapiente modi nesciunt.
-      </Typography>
-    </>
+    <Routes>
+      {routes.map((route, idx) => (
+        <Route key={idx} path={route.path} element={route.element} />
+      ))}
+    </Routes>
   );
 };
 

@@ -1,0 +1,24 @@
+.toggle-container {
+  width: fit-content;
+  background-color: #ecbc764a;
+  padding: 5px 10px;
+  margin: 10px auto;
+  border-radius: 80px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.toggle-container button {
+  color: #ecbc76;
+  padding: 5px 20px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+}
+
+button.selected {
+  background-color: #ecbc76;
+  color: #fff;
+  border-radius: 80px;
+}
