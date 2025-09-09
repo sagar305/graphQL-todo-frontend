@@ -1,35 +1,30 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import Drawer from '@mui/material/Drawer';
 import {
   Divider,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
+  AppBar,
+  Box,
+  Toolbar,
+  IconButton,
+  Typography,
+  Menu,
+  Container,
+  Avatar,
+  Button,
+  Tooltip,
+  MenuItem,
+  Drawer,
+  Link,
 } from '@mui/material';
+import { Link as RouteLink, useNavigate } from 'react-router-dom';
 
-const pages = ['Products', 'Pricing', 'Blog'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 const drawerWidth = 240;
 
 interface Props {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
   window?: () => Window;
   settings?: string[];
   pages: string[];
@@ -40,6 +35,7 @@ const ResponsiveAppBar = ({ window, settings = [], pages }: Props) => {
     null
   );
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -51,6 +47,13 @@ const ResponsiveAppBar = ({ window, settings = [], pages }: Props) => {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('email');
+    location.reload();
   };
 
   const drawer = (
@@ -149,13 +152,27 @@ const ResponsiveAppBar = ({ window, settings = [], pages }: Props) => {
             }}
           >
             {pages.map((page) => (
-              <Button
+              <RouteLink
                 key={page}
-                onClick={handleCloseUserMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
+                to={
+                  page !== 'Home'
+                    ? `/todo/${page.toLowerCase().replace(' ', '-')}`
+                    : '/'
+                }
               >
-                {page}
-              </Button>
+                <Link
+                  onClick={handleCloseUserMenu}
+                  underline="hover"
+                  sx={{
+                    margin: 2,
+                    color: 'white',
+                    display: 'block',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {page}
+                </Link>
+              </RouteLink>
             ))}
           </Box>
           {settings.length > 0 && (
@@ -182,7 +199,14 @@ const ResponsiveAppBar = ({ window, settings = [], pages }: Props) => {
                 onClose={handleCloseUserMenu}
               >
                 {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <MenuItem
+                    key={setting}
+                    onClick={
+                      setting.toLowerCase() === 'logout'
+                        ? handleLogout
+                        : handleCloseUserMenu
+                    }
+                  >
                     <Typography sx={{ textAlign: 'center' }}>
                       {setting}
                     </Typography>
