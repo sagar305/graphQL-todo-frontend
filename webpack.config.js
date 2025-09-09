@@ -56,7 +56,9 @@ module.exports = () => {
       new HtmlWebpackPlugin({
         template: 'index.html',
       }),
-      new webpack.DefinePlugin(envKeys), // 🔑 inject .env vars
+      new webpack.DefinePlugin({
+        'process.env.APIURL': JSON.stringify(process.env.APIURL),
+      }), // 🔑 inject .env vars
     ],
   };
 };
