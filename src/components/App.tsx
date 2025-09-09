@@ -34,7 +34,6 @@ const App: React.FC = () => {
       console.log(error);
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('accessToken');
-      navigate('/login');
     }
   };
 

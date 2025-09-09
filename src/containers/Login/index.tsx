@@ -60,6 +60,7 @@ const Login = () => {
         data?.['login']?.['refreshToken'] ?? ''
       );
       localStorage.setItem('accessToken', data?.['login']?.['token'] ?? '');
+      localStorage.setItem('email', data?.['login']?.['user']?.['email'] ?? '');
       navigate('/');
     }
   }, [data]);
